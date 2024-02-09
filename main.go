@@ -8,6 +8,9 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/julienschmidt/httprouter"
+	"github.com/justinas/alice"
+
 	_ "modernc.org/sqlite"
 )
 
@@ -80,15 +83,35 @@ func (a *App) home(w http.ResponseWriter, r *http.Request) {
 func main() {
 	app := newApp("data/database.sqlite3")
 
+
+func (a *App) routes() http.Handler {
+	router := httprouter.New()
 	fileServer := http.FileServer(http.Dir("./static/"))
+	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
-	mux := http.NewServeMux()
+	router.HandlerFunc(http.MethodGet, "/", a.getDefaultRoute)
+	router.HandlerFunc(http.MethodPost, "/", a.processForm)
+	standard := alice.New()
 
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
-	mux.HandleFunc("/", app.home)
+	return standard.Then(router)
+}
+
+func main() {
+	app := newApp("data/database.sqlite3")
+	addr := flag.String("addr", ":8080", "HTTP network address")
+
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	defer app.db.Close()
 
-	err := http.ListenAndServe(":8080", mux)
-	log.Fatal(err)
+	srv := &http.Server{
+		Addr:     *addr,
+		ErrorLog: errorLog,
+		Handler:  app.routes(),
+	}
+
+	infoLog.Printf("Starting server on %s", *addr)
+	err := srv.ListenAndServe()
+	errorLog.Fatal(err)
 }
