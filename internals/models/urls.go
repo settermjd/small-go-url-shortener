@@ -15,7 +15,18 @@ type ShortenerDataModel struct {
 }
 
 func (m *ShortenerDataModel) Insert(original string, shortened string, clicks int) (int, error) {
-	return 0, nil
+	stmt := `INSERT INTO urls  (original_url, shortened_url, clicks) VALUES(?, ?, ?)`
+	result, err := m.DB.Exec(stmt, original, shortened, clicks)
+	if err != nil {
+		return 0, err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(rowsAffected), nil
 }
 
 func (m *ShortenerDataModel) Get(shortened string) (*ShortenerData, error) {

@@ -1,12 +1,20 @@
 package main
 
 import (
+	"crypto/rand"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/base64"
+	"flag"
 	"fmt"
 	"gourlshortener/internals/models"
 	"html/template"
 	"log"
+	"math/big"
 	"net/http"
+	"net/url"
+	"os"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
@@ -51,8 +59,42 @@ func newApp(dbFile string) App {
 	return App{db: db, urls: &models.ShortenerDataModel{DB: db}}
 }
 
-func (a *App) home(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Ready to rock!")
+// uniqid returns a unique id string useful when generating random strings.
+// It was lifted from https://www.php2golang.com/method/function.uniqid.html.
+func uniqid(prefix string) string {
+	now := time.Now()
+	sec := now.Unix()
+	usec := now.UnixNano() % 0x100000
+
+	return fmt.Sprintf("%s%08x%05x", prefix, sec, usec)
+}
+
+// ShortenURL generates and returns a short URL string.
+func (a *App) ShortenURL() string {
+	var (
+		randomChars   = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0987654321")
+		randIntLength = 27
+		stringLength  = 32
+	)
+
+	str := make([]rune, stringLength)
+
+	for char := range str {
+		nBig, err := rand.Int(rand.Reader, big.NewInt(int64(randIntLength)))
+		if err != nil {
+			panic(err)
+		}
+
+		str[char] = randomChars[nBig.Int64()]
+	}
+
+	hash := sha256.Sum256([]byte(uniqid(string(str))))
+	encodedString := base64.StdEncoding.EncodeToString(hash[:])
+
+	return encodedString[0:9]
+}
+
+func (a *App) getDefaultRoute(w http.ResponseWriter, r *http.Request) {
 	templatesFiles := []string{
 		"./templates/default.html",
 	}
@@ -72,7 +114,6 @@ func (a *App) home(w http.ResponseWriter, r *http.Request) {
 	pageData := PageData{
 		URLData: urls,
 	}
-	fmt.Println("Ready to write the template data to the ResponseWriter")
 	err = tmpl.Execute(w, pageData)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -80,9 +121,39 @@ func (a *App) home(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func main() {
-	app := newApp("data/database.sqlite3")
+func (a *App) clientError(w http.ResponseWriter, status int) {
+	http.Error(w, http.StatusText(status), status)
+}
 
+func (a *App) processForm(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		fmt.Println(err.Error())
+		serverError(w, err)
+		return
+	}
+
+	original := r.PostForm.Get("url")
+	parsedUrl, err := url.Parse(original)
+	if err != nil {
+		fmt.Println(err.Error())
+		serverError(w, err)
+		return
+	}
+	shortened := parsedUrl.Scheme + "://" + a.ShortenURL()
+
+	_, err = a.urls.Insert(original, shortened, 0)
+	if err != nil {
+		fmt.Println(err.Error())
+		serverError(w, err)
+		return
+	}
+
+	fmt.Println("Redirecting after successful save.")
+
+	// Redirect to the default route
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
 
 func (a *App) routes() http.Handler {
 	router := httprouter.New()
