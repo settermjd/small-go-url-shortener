@@ -2,7 +2,11 @@ module gourlshortener
 
 go 1.20
 
-require modernc.org/sqlite v1.28.0
+require (
+	github.com/julienschmidt/httprouter v1.3.0
+	github.com/justinas/alice v1.2.0
+	modernc.org/sqlite v1.28.0
+)
 
 require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
