@@ -66,7 +66,7 @@
 
     <div class="mx-auto my-auto lg:max-w-8xl lg:w-[70rem] w-full px-4 mt-3 mb-4">
       <table id="shortened-links-table"
-        class="w-full table-auto rounded-md bg-slate-50 dark:bg-slate-800 border-separate border-spacing-2 border-2 dark:border-0 border-slate-200 shadow-sm">
+        class="w-full table-fixed rounded-md bg-slate-50 dark:bg-slate-800 border-separate border-spacing-2 border-2 dark:border-0 border-slate-200 shadow-sm">
         <thead>
           <tr>
             <th
@@ -99,8 +99,8 @@
                 class="hover:underline underline-offset-4 decoration-2 decoration-blue-500 dark:decoration-slate-500">{{ .ShortenedURL }}</a>
             </td>
             <td
-              class="border border-slate-300 py-2 pl-4 text-left rounded-sm bg-white dark:text-white dark:bg-slate-700 dark:border-0">
-              {{ .OriginalURL }}</td>
+              class="border border-slate-300 py-2 px-4 text-left block rounded-sm bg-white dark:bg-slate-700 dark:border-0">
+              <div class="truncate" title="{{ .OriginalURL }}">{{ .OriginalURL }}</div></td>
             <td
               class="border border-slate-300 py-2 rounded-sm bg-white dark:text-white dark:bg-slate-700 dark:border-0">
               {{ .Clicks }}</td>
