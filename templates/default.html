@@ -109,6 +109,11 @@
           </tr>
           {{ end }}
         </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" class="pl-1 text-sm text-slate-500 text-right">{{ .URLData | len }} shortened URLs available.</td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   </main>
