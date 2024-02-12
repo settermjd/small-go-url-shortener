@@ -17,6 +17,7 @@ import (
 	"time"
 
 	urlverifier "github.com/davidmytton/url-verifier"
+	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
 
@@ -109,14 +110,40 @@ func (a *App) getDefaultRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	session, err := store.Get(r, "flash-session")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	pageData := PageData{
 		URLData: urls,
 	}
+
+	fm := session.Flashes("error")
+	if fm != nil {
+		if error, ok := fm[0].(string); ok {
+			pageData.Error = error
+		} else {
+			fmt.Printf("Session flash did not contain an error message. Contained %s.\n", fm[0])
+		}
+	}
+	session.Save(r, w)
+
 	err = tmpl.Execute(w, pageData)
 	if err != nil {
 		fmt.Println(err.Error())
 		serverError(w, err)
 	}
+}
+
+func setErrorInFlash(error string, w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "flash-session")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	session.AddFlash(error, "error")
+	session.Save(r, w)
 }
 
 // shortenURL processes the URL shortener form. It generates a shortened
@@ -139,6 +166,7 @@ func (a *App) shortenURL(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil || !result.HTTP.IsSuccess {
 		fmt.Println(err.Error())
+		setErrorInFlash("The URL was not reachable.", w, r)
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
@@ -154,7 +182,8 @@ func (a *App) shortenURL(w http.ResponseWriter, r *http.Request) {
 	_, err = a.urls.Insert(originalURL, shortenedURL, 0)
 	if err != nil {
 		fmt.Println(err.Error())
-		serverError(w, err)
+		setErrorInFlash("We weren't able to shorten the URL.", w, r)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
@@ -203,6 +232,8 @@ func (a *App) routes() http.Handler {
 
 	return standard.Then(router)
 }
+
+var store = sessions.NewCookieStore([]byte("a-secret-string"))
 
 func main() {
 	app := newApp("data/database.sqlite3")
