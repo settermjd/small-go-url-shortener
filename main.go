@@ -20,6 +20,9 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
+	"golang.org/x/text/number"
 
 	_ "modernc.org/sqlite"
 )
@@ -97,7 +100,7 @@ func (a *App) GenerateShortenedURL() string {
 // shortening a URL.
 func (a *App) getDefaultRoute(w http.ResponseWriter, r *http.Request) {
 	tmplFile := "./templates/default.html"
-	tmpl, err := template.New("default.html").ParseFiles(tmplFile)
+	tmpl, err := template.New("default.html").Funcs(functions).ParseFiles(tmplFile)
 	if err != nil {
 		fmt.Println(err.Error())
 		serverError(w, err)
@@ -144,6 +147,15 @@ func setErrorInFlash(error string, w http.ResponseWriter, r *http.Request) {
 	}
 	session.AddFlash(error, "error")
 	session.Save(r, w)
+}
+
+var functions = template.FuncMap{
+	"formatClicks": formatClicks,
+}
+
+func formatClicks(clicks int) string {
+	p := message.NewPrinter(language.English)
+	return p.Sprintf("%v", number.Decimal(clicks))
 }
 
 // shortenURL processes the URL shortener form. It generates a shortened

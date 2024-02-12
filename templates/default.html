@@ -106,7 +106,7 @@
               <div class="truncate" title="{{ .OriginalURL }}">{{ .OriginalURL }}</div></td>
             <td
               class="border border-slate-300 py-2 rounded-sm bg-white dark:text-white dark:bg-slate-700 dark:border-0">
-              {{ .Clicks }}</td>
+              {{ .Clicks | formatClicks }}</td>
           </tr>
           {{ end }}
         </tbody>
