@@ -69,8 +69,8 @@ func uniqid(prefix string) string {
 	return fmt.Sprintf("%s%08x%05x", prefix, sec, usec)
 }
 
-// ShortenURL generates and returns a short URL string.
-func (a *App) ShortenURL() string {
+// GenerateShortenedURL generates and returns a short URL string.
+func (a *App) GenerateShortenedURL() string {
 	var (
 		randomChars   = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0987654321")
 		randIntLength = 27
@@ -121,11 +121,10 @@ func (a *App) getDefaultRoute(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a *App) clientError(w http.ResponseWriter, status int) {
-	http.Error(w, http.StatusText(status), status)
-}
-
-func (a *App) processForm(w http.ResponseWriter, r *http.Request) {
+// shortenURL processes the URL shortener form. It generates a shortened
+// URL for the original URL and stores them both in the database. After
+// the details have been saved, the user is redirected to the default route.
+func (a *App) shortenURL(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -140,28 +139,56 @@ func (a *App) processForm(w http.ResponseWriter, r *http.Request) {
 		serverError(w, err)
 		return
 	}
-	shortened := parsedUrl.Scheme + "://" + a.ShortenURL()
+	shortenedURL := parsedUrl.Scheme + "://" + a.GenerateShortenedURL()
 
-	_, err = a.urls.Insert(original, shortened, 0)
+	_, err = a.urls.Insert(originalURL, shortenedURL, 0)
 	if err != nil {
 		fmt.Println(err.Error())
 		serverError(w, err)
 		return
 	}
 
-	fmt.Println("Redirecting after successful save.")
+	fmt.Printf("Redirecting to the default route, after shortening %s to %s and persisting it.", originalURL, shortenedURL)
 
 	// Redirect to the default route
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
+// openShortenedRoute retrieves the original URL from the shortened URL provided
+// and, if retrieved from the database, redirects the user to the shortened URL.
+func (a *App) openShortenedRoute(w http.ResponseWriter, r *http.Request) {
+	shortenedURL := r.URL.Query().Get("url")
+	fmt.Printf("Attempting to retrieve %s.\n", shortenedURL)
+
+	urlData, err := a.urls.Get(shortenedURL)
+	if err != nil {
+		fmt.Println(err.Error())
+		serverError(w, err)
+		return
+	}
+
+	err = a.urls.IncrementClicks(shortenedURL)
+	if err != nil {
+		fmt.Println(err.Error())
+		serverError(w, err)
+		return
+	}
+
+	fmt.Printf("Redirecting to %s.\n", urlData.OriginalURL)
+
+	// Redirect to the default route
+	http.Redirect(w, r, urlData.OriginalURL, http.StatusSeeOther)
+}
+
+// routes creates the application's routing table
 func (a *App) routes() http.Handler {
 	router := httprouter.New()
 	fileServer := http.FileServer(http.Dir("./static/"))
 	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
 	router.HandlerFunc(http.MethodGet, "/", a.getDefaultRoute)
-	router.HandlerFunc(http.MethodPost, "/", a.processForm)
+	router.HandlerFunc(http.MethodGet, "/open", a.openShortenedRoute)
+	router.HandlerFunc(http.MethodPost, "/", a.shortenURL)
 	standard := alice.New()
 
 	return standard.Then(router)
