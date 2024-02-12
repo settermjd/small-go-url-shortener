@@ -94,11 +94,12 @@ func (a *App) GenerateShortenedURL() string {
 	return encodedString[0:9]
 }
 
+// getDefaultRoute retrieves a list of the stored shortened URLS and
+// renders them in a table on the default route, along with a form for
+// shortening a URL.
 func (a *App) getDefaultRoute(w http.ResponseWriter, r *http.Request) {
-	templatesFiles := []string{
-		"./templates/default.html",
-	}
-	tmpl, err := template.ParseFiles(templatesFiles...)
+	tmplFile := "./templates/default.html"
+	tmpl, err := template.New("default.html").ParseFiles(tmplFile)
 	if err != nil {
 		fmt.Println(err.Error())
 		serverError(w, err)
@@ -132,8 +133,8 @@ func (a *App) shortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	original := r.PostForm.Get("url")
-	parsedUrl, err := url.Parse(original)
+	originalURL := r.PostForm.Get("url")
+	parsedUrl, err := url.Parse(originalURL)
 	if err != nil {
 		fmt.Println(err.Error())
 		serverError(w, err)
