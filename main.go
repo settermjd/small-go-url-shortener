@@ -33,10 +33,6 @@ type PageData struct {
 	URLData                          []*models.ShortenerData
 }
 
-type Shortener interface {
-	Shorten() string
-}
-
 type App struct {
 	db   *sql.DB
 	urls *models.ShortenerDataModel
