@@ -16,6 +16,7 @@ import (
 	"os"
 	"time"
 
+	urlverifier "github.com/davidmytton/url-verifier"
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
 
@@ -130,6 +131,18 @@ func (a *App) shortenURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	originalURL := r.PostForm.Get("url")
+
+	// Verify if the URL supplied is a genuine and workable URL
+	verifier := urlverifier.NewVerifier()
+	verifier.EnableHTTPCheck()
+	result, err := verifier.Verify(originalURL)
+
+	if err != nil || !result.HTTP.IsSuccess {
+		fmt.Println(err.Error())
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
 	parsedUrl, err := url.Parse(originalURL)
 	if err != nil {
 		fmt.Println(err.Error())
