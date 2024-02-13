@@ -11,10 +11,12 @@ type ShortenerData struct {
 	Clicks                    int
 }
 
+// ShortenerDataModel manages database interaction for the URL shortener data
 type ShortenerDataModel struct {
 	DB *sql.DB
 }
 
+// Insert inserts a new record into the urls table
 func (m *ShortenerDataModel) Insert(original string, shortened string, clicks int) (int, error) {
 	stmt := `INSERT INTO urls  (original_url, shortened_url, clicks) VALUES(?, ?, ?)`
 	result, err := m.DB.Exec(stmt, original, shortened, clicks)
@@ -30,6 +32,7 @@ func (m *ShortenerDataModel) Insert(original string, shortened string, clicks in
 	return int(rowsAffected), nil
 }
 
+// Get retrieves a record from the urls table identifying that record by the shortened URL
 func (m *ShortenerDataModel) Get(shortened string) (*ShortenerData, error) {
 	stmt := `SELECT original_url, shortened_url, clicks FROM urls WHERE shortened_url = ?`
 	row := m.DB.QueryRow(stmt, shortened)
@@ -46,7 +49,7 @@ func (m *ShortenerDataModel) Get(shortened string) (*ShortenerData, error) {
 	return data, nil
 }
 
-// IncrementClicks increments the number of clicks for a shortened URL
+// IncrementClicks increments the number of clicks for a shortened URL by one
 func (m *ShortenerDataModel) IncrementClicks(shortened string) error {
 	stmt := `UPDATE urls SET clicks = clicks + 1 WHERE shortened_url = ?`
 	_, err := m.DB.Exec(stmt, shortened)
@@ -57,8 +60,9 @@ func (m *ShortenerDataModel) IncrementClicks(shortened string) error {
 	return nil
 }
 
+// Latest retrieves all of the records from the urls table in the database
 func (m *ShortenerDataModel) Latest() ([]*ShortenerData, error) {
-	stmt := `SELECT original_url, shortened_url, clicks FROM urls`
+	stmt := `SELECT original_url, shortened_url, clicks FROM urls ORDER BY `
 	rows, err := m.DB.Query(stmt)
 	if err != nil {
 		return nil, err
