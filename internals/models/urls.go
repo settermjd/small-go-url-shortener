@@ -62,7 +62,7 @@ func (m *ShortenerDataModel) IncrementClicks(shortened string) error {
 
 // Latest retrieves all of the records from the urls table in the database
 func (m *ShortenerDataModel) Latest() ([]*ShortenerData, error) {
-	stmt := `SELECT original_url, shortened_url, clicks FROM urls ORDER BY `
+	stmt := `SELECT original_url, shortened_url, clicks FROM urls ORDER BY created DESC, original_url ASC`
 	rows, err := m.DB.Query(stmt)
 	if err != nil {
 		return nil, err
