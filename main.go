@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/base64"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"gourlshortener/internals/models"
@@ -140,6 +141,35 @@ func (a *App) getDefaultRoute(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// getAllUrls returns all of the available URL data in the urls table as a
+// JSON-formatted string
+func (a *App) getAllUrls(w http.ResponseWriter, r *http.Request) {
+	urls, err := a.urls.Latest()
+	if err != nil {
+		fmt.Printf("Could not retrieve all URLs, because %s.\n", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNoContent)
+		w.Write([]byte(`{"error":"Could not retrieve URL data."}`))
+		return
+	}
+
+	if len(urls) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	data, err := json.Marshal(urls)
+	if err != nil {
+		fmt.Printf("Could not retrieve all URLs, because %s.\n", err)
+		w.Write([]byte(`{"error":"Could not retrieve URL data."}`))
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(data))
+}
+
 func setErrorInFlash(error string, w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "flash-session")
 	if err != nil {
@@ -237,9 +267,14 @@ func (a *App) routes() http.Handler {
 	fileServer := http.FileServer(http.Dir("./static/"))
 	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
+	// Define the web-based routes
 	router.HandlerFunc(http.MethodGet, "/", a.getDefaultRoute)
 	router.HandlerFunc(http.MethodGet, "/open", a.openShortenedRoute)
 	router.HandlerFunc(http.MethodPost, "/", a.shortenURL)
+
+	// Define the API routes
+	router.HandlerFunc(http.MethodGet, "/api/", a.getAllUrls)
+
 	standard := alice.New()
 
 	return standard.Then(router)
