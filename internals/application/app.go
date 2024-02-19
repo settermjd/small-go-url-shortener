@@ -9,10 +9,11 @@ import (
 	"net/http"
 	"net/url"
 	"text/template"
+	"time"
 
 	urlverifier "github.com/davidmytton/url-verifier"
-	"github.com/julienschmidt/httprouter"
 	"github.com/gorilla/sessions"
+	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
 )
 
@@ -29,17 +30,6 @@ type PageData struct {
 
 func serverError(w http.ResponseWriter, err error) {
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-}
-
-var store = sessions.NewCookieStore([]byte("a-secret-string"))
-
-func setErrorInFlash(error string, w http.ResponseWriter, r *http.Request) {
-	session, err := store.Get(r, "flash-session")
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	session.AddFlash(error, "error")
-	session.Save(r, w)
 }
 
 type App struct {
@@ -100,7 +90,7 @@ func (a *App) getDefaultRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := store.Get(r, "flash-session")
+	session, err := a.store.Get(r, "flash-session")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -140,7 +130,7 @@ func (a *App) shortenURL(w http.ResponseWriter, r *http.Request) {
 
 	originalURL := r.PostForm.Get("url")
 	if originalURL == "" {
-		setErrorInFlash("Please provide a URL to shorten.", w, r)
+		a.setErrorInFlash("Please provide a URL to shorten.", w, r)
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
@@ -152,7 +142,7 @@ func (a *App) shortenURL(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil || !result.HTTP.IsSuccess {
 		fmt.Println(err.Error())
-		setErrorInFlash("The URL was not reachable.", w, r)
+		a.setErrorInFlash("The URL was not reachable.", w, r)
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
@@ -168,7 +158,7 @@ func (a *App) shortenURL(w http.ResponseWriter, r *http.Request) {
 	_, err = a.urls.Insert(originalURL, shortenedURL, 0)
 	if err != nil {
 		fmt.Println(err.Error())
-		setErrorInFlash("We weren't able to shorten the URL.", w, r)
+		a.setErrorInFlash("We weren't able to shorten the URL.", w, r)
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
