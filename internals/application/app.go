@@ -43,10 +43,12 @@ func setErrorInFlash(error string, w http.ResponseWriter, r *http.Request) {
 }
 
 type App struct {
-	urls *models.ShortenerDataModel
+	urls            *models.ShortenerDataModel
+	store           *sessions.CookieStore
+	templateBaseDir string
 }
 
-func NewApp(dbFile string) App {
+func NewApp(dbFile, authKey, templateBaseDir string) App {
 	db, err := sql.Open("sqlite", dbFile)
 	if err != nil {
 		log.Fatal(err)
@@ -56,18 +58,31 @@ func NewApp(dbFile string) App {
 		log.Fatal(err)
 	}
 
-	return App{urls: &models.ShortenerDataModel{DB: db}}
+	return App{
+		urls:            &models.ShortenerDataModel{DB: db},
+		store:           sessions.NewCookieStore([]byte(authKey)),
+		templateBaseDir: templateBaseDir,
+	}
 }
 
 func (a *App) CloseDB() {
 	a.urls.DB.Close()
 }
 
+func (a *App) setErrorInFlash(error string, w http.ResponseWriter, r *http.Request) {
+	session, err := a.store.Get(r, "flash-session")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	session.AddFlash(error, "error")
+	session.Save(r, w)
+}
+
 // getDefaultRoute retrieves a list of the stored shortened URLS and
 // renders them in a table on the default route, along with a form for
 // shortening a URL.
 func (a *App) getDefaultRoute(w http.ResponseWriter, r *http.Request) {
-	tmplFile := "./templates/default.html"
+	tmplFile := fmt.Sprintf("%s/templates/default.html", a.templateBaseDir)
 	tmpl, err := template.New("default.html").
 		Funcs(template.FuncMap{
 			"formatClicks": utils.FormatClicks,

@@ -8,10 +8,20 @@ import (
 	"os"
 
 	_ "modernc.org/sqlite"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	app := application.NewApp("data/database.sqlite3")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	dbFile := os.Getenv("DATABASE_FILE")
+	authKey := os.Getenv("AUTHENTICATION_KEY")
+	templateBaseDir := os.Getenv("TEMPLATE_BASEDIR")
+
+	app := application.NewApp(dbFile, authKey, templateBaseDir)
 	addr := flag.String("addr", ":8080", "HTTP network address")
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -26,6 +36,6 @@ func main() {
 	}
 
 	infoLog.Printf("Starting server on %s", *addr)
-	err := srv.ListenAndServe()
+	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }
