@@ -40,6 +40,7 @@ func (m *ShortenerDataModel) Get(shortened string) (*ShortenerData, error) {
 	err := row.Scan(&data.OriginalURL, &data.ShortenedURL, &data.Clicks)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
+			var ErrNoRecord = errors.New("models: no matching record found")
 			return nil, ErrNoRecord
 		} else {
 			return nil, err
