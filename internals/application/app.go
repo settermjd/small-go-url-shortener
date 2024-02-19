@@ -205,6 +205,27 @@ func (a *App) openShortenedRoute(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, urlData.OriginalURL, http.StatusSeeOther)
 }
 
+func (a *App) notFound(w http.ResponseWriter, r *http.Request) {
+	tmplFile := fmt.Sprintf("%s/templates/404.html", a.templateBaseDir)
+	tmpl, err := template.New("404.html").ParseFiles(tmplFile)
+	if err != nil {
+		fmt.Println(err.Error())
+		serverError(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNotFound)
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		fmt.Println(err.Error())
+		serverError(w, err)
+	}
+}
+
+func (a *App) ping(w http.ResponseWriter, r *http.Request) {
+	t := time.Now()
+	w.Write([]byte(fmt.Sprintf("%d", t.Unix())))
+}
+
 // routes creates the application's routing table
 func (a *App) Routes() http.Handler {
 	router := httprouter.New()
@@ -214,6 +235,10 @@ func (a *App) Routes() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/", a.getDefaultRoute)
 	router.HandlerFunc(http.MethodGet, "/open", a.openShortenedRoute)
 	router.HandlerFunc(http.MethodPost, "/", a.shortenURL)
+	router.HandlerFunc(http.MethodGet, "/api/ping", a.ping)
+	router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		a.notFound(w, r)
+	})
 	standard := alice.New()
 
 	return standard.Then(router)
