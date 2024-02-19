@@ -169,6 +169,11 @@ func (a *App) shortenURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	originalURL := r.PostForm.Get("url")
+	if originalURL == "" {
+		setErrorInFlash("Please provide a URL to shorten.", w, r)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
 
 	// Verify if the URL supplied is a genuine and workable URL
 	verifier := urlverifier.NewVerifier()
