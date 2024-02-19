@@ -39,7 +39,6 @@ type PageData struct {
 }
 
 type App struct {
-	db   *sql.DB
 	urls *models.ShortenerDataModel
 }
 
@@ -57,7 +56,7 @@ func newApp(dbFile string) App {
 		log.Fatal(err)
 	}
 
-	return App{db: db, urls: &models.ShortenerDataModel{DB: db}}
+	return App{urls: &models.ShortenerDataModel{DB: db}}
 }
 
 // uniqid returns a unique id string useful when generating random strings.
@@ -254,7 +253,7 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	defer app.db.Close()
+	defer app.urls.DB.Close()
 
 	srv := &http.Server{
 		Addr:     *addr,
