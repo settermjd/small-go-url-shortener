@@ -5,6 +5,13 @@ import (
 	"errors"
 )
 
+type ShortenerDataInterface interface {
+	Get(shortened string) (*ShortenerData, error)
+	IncrementClicks(shortened string) error
+	Insert(original string, shortened string, clicks int) (int, error)
+	Latest() ([]*ShortenerData, error)
+}
+
 // Stores an original URL, shortened URL, and the number of times the shortened URL was clicked
 type ShortenerData struct {
 	OriginalURL, ShortenedURL string

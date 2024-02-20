@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"gourlshortener/internals/models"
 	"gourlshortener/internals/utils"
-	"log"
 	"net/http"
 	"net/url"
 	"text/template"
@@ -33,30 +32,17 @@ func serverError(w http.ResponseWriter, err error) {
 }
 
 type App struct {
-	urls            *models.ShortenerDataModel
+	urls            models.ShortenerDataInterface
 	store           *sessions.CookieStore
 	templateBaseDir string
 }
 
-func NewApp(dbFile, authKey, templateBaseDir string) App {
-	db, err := sql.Open("sqlite", dbFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err = db.Ping(); err != nil {
-		log.Fatal(err)
-	}
-
+func NewApp(db *sql.DB, authKey, templateBaseDir string) App {
 	return App{
 		urls:            &models.ShortenerDataModel{DB: db},
 		store:           sessions.NewCookieStore([]byte(authKey)),
 		templateBaseDir: templateBaseDir,
 	}
-}
-
-func (a *App) CloseDB() {
-	a.urls.DB.Close()
 }
 
 func (a *App) setErrorInFlash(error string, w http.ResponseWriter, r *http.Request) {
