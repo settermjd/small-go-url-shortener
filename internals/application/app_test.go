@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -65,6 +66,27 @@ func TestPingRoute(t *testing.T) {
 
 	if rs.StatusCode != http.StatusOK {
 		t.Errorf("got %d; want %d", rs.StatusCode, http.StatusOK)
+	}
+}
+
+func TestCanShortenUrl(t *testing.T) {
+	app := &App{
+		urls:            &mocks.ShortenerDataModel{},
+		store:           sessions.NewCookieStore([]byte("this-is-a-test-key")),
+		templateBaseDir: getTemplateDir(t),
+	}
+
+	ts := httptest.NewTLSServer(app.Routes())
+	defer ts.Close()
+
+	var form = url.Values{}
+	form.Add("url", "https://osnews.com")
+	rs, err := ts.Client().PostForm(ts.URL + "/", form)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rs.StatusCode != http.StatusSeeOther {
+		t.Errorf("got %d; want %d", rs.StatusCode, http.StatusSeeOther)
 	}
 }
 
