@@ -2,8 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"encoding/base64"
-	"encoding/json"
 	"flag"
 	"gourlshortener/internals/application"
 	"log"
