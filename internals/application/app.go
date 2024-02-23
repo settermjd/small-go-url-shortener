@@ -32,16 +32,18 @@ func serverError(w http.ResponseWriter, err error) {
 }
 
 type App struct {
-	urls            models.ShortenerDataInterface
-	store           *sessions.CookieStore
-	templateBaseDir string
+	urls                       models.ShortenerDataInterface
+	store                      *sessions.CookieStore
+	templateBaseDir, staticDir string
 }
 
-func NewApp(db *sql.DB, authKey, templateBaseDir string) App {
+// NewApp initialises a fully-functional App instance
+func NewApp(db *sql.DB, authKey, templateBaseDir, staticDir string) App {
 	return App{
 		urls:            &models.ShortenerDataModel{DB: db},
 		store:           sessions.NewCookieStore([]byte(authKey)),
 		templateBaseDir: templateBaseDir,
+		staticDir:       staticDir,
 	}
 }
 
@@ -58,7 +60,7 @@ func (a *App) setErrorInFlash(error string, w http.ResponseWriter, r *http.Reque
 // renders them in a table on the default route, along with a form for
 // shortening a URL.
 func (a *App) getDefaultRoute(w http.ResponseWriter, r *http.Request) {
-	tmplFile := fmt.Sprintf("%s/templates/default.html", a.templateBaseDir)
+	tmplFile := fmt.Sprintf("%s/default.html", a.templateBaseDir)
 	tmpl, err := template.New("default.html").
 		Funcs(template.FuncMap{
 			"formatClicks": utils.FormatClicks,
@@ -182,7 +184,7 @@ func (a *App) openShortenedRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) notFound(w http.ResponseWriter, r *http.Request) {
-	tmplFile := fmt.Sprintf("%s/templates/404.html", a.templateBaseDir)
+	tmplFile := fmt.Sprintf("%s/404.html", a.templateBaseDir)
 	tmpl, err := template.New("404.html").ParseFiles(tmplFile)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -202,10 +204,10 @@ func (a *App) ping(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(fmt.Sprintf("%d", t.Unix())))
 }
 
-// routes creates the application's routing table
+// Routes creates the application's routing table
 func (a *App) Routes() http.Handler {
 	router := httprouter.New()
-	fileServer := http.FileServer(http.Dir("./static/"))
+	fileServer := http.FileServer(http.Dir(a.staticDir))
 	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
 	router.HandlerFunc(http.MethodGet, "/", a.getDefaultRoute)

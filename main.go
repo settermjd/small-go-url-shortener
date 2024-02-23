@@ -21,6 +21,7 @@ func main() {
 	dbFile := os.Getenv("DATABASE_FILE")
 	authKey := os.Getenv("AUTHENTICATION_KEY")
 	templateBaseDir := os.Getenv("TEMPLATE_BASEDIR")
+	staticDir := os.Getenv("STATIC_DIR")
 
 	db, err := sql.Open("sqlite", dbFile)
 	if err != nil {
@@ -31,7 +32,7 @@ func main() {
 	}
 	defer db.Close()
 
-	app := application.NewApp(db, authKey, templateBaseDir)
+	app := application.NewApp(db, authKey, templateBaseDir, staticDir)
 	addr := flag.String("addr", ":8080", "HTTP network address")
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)

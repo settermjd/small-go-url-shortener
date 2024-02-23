@@ -23,7 +23,7 @@ func getTemplateDir(t *testing.T) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return fmt.Sprintf("%s/../../", path)
+	return fmt.Sprintf("%s/../../templates/", path)
 }
 
 // getPageElement uses an XPath expression to search for an element
