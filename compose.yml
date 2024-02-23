@@ -1,0 +1,22 @@
+version: '3'
+services:
+  go-web-app:
+    restart: always
+    ports:
+      - "8080:8080"
+    build:
+      dockerfile: Dockerfile
+      context: .
+    environment:
+      - AUTHENTICATION_KEY=${AUTHENTICATION_KEY}
+      - DATABASE_FILE=${DATABASE_FILE}
+      - DATABASE_DIR=${DATABASE_DIR}
+      - STATIC_DIR=${STATIC_DIR}
+      - TEMPLATE_BASEDIR=${TEMPLATE_BASEDIR}
+    volumes:
+      - "urlshortenerdata:$DATABASE_DIR"
+
+volumes:
+  urlshortenerdata:
+    external: true
+      
