@@ -155,7 +155,7 @@ func (a *App) shortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("Redirecting to the default route, after shortening %s to %s and persisting it.", originalURL, shortenedURL)
+	//fmt.Printf("Redirecting to the default route, after shortening %s to %s and persisting it.", originalURL, shortenedURL)
 
 	// Redirect to the default route
 	http.Redirect(w, r, "/", http.StatusSeeOther)
