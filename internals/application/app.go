@@ -16,7 +16,7 @@ import (
 	"github.com/justinas/alice"
 )
 
-// This stores the template data for the default route
+// PageData stores the template data for the default route
 //
 // This is the original URL that was submitted in the form, if any,
 // the shortened URL version of the original URL, if the form was
@@ -31,6 +31,10 @@ func serverError(w http.ResponseWriter, err error) {
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
+// App models the core aspects of the application
+//
+// It has a connection to the database models, a connection to the session, and
+// the location of the template and static directories.
 type App struct {
 	urls                       models.ShortenerDataInterface
 	store                      *sessions.CookieStore
@@ -135,13 +139,13 @@ func (a *App) shortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	parsedUrl, err := url.Parse(originalURL)
+	parsedURL, err := url.Parse(originalURL)
 	if err != nil {
 		fmt.Println(err.Error())
 		serverError(w, err)
 		return
 	}
-	shortenedURL := parsedUrl.Scheme + "://" + utils.GenerateShortenedURL()
+	shortenedURL := parsedURL.Scheme + "://" + utils.GenerateShortenedURL()
 
 	_, err = a.urls.Insert(originalURL, shortenedURL, 0)
 	if err != nil {

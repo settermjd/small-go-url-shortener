@@ -32,7 +32,7 @@ func getTemplateDir(t *testing.T) string {
 func getPageElement(xpathQuery string, doc *html.Node) (*html.Node, error) {
 	element := htmlquery.FindOne(doc, xpathQuery)
 	if element == nil {
-		return nil, errors.New("No element matching the supplied XPath expression was found.")
+		return nil, errors.New("No element matching the supplied XPath expression was found")
 	}
 	return element, nil
 }
@@ -40,7 +40,7 @@ func getPageElement(xpathQuery string, doc *html.Node) (*html.Node, error) {
 func getAllPageElements(xpathQuery string, doc *html.Node) ([]*html.Node, error) {
 	elements, err := htmlquery.QueryAll(doc, xpathQuery)
 	if err != nil || elements == nil {
-		return nil, errors.New("No element matching the supplied XPath expression was found.")
+		return nil, errors.New("No element matching the supplied XPath expression was found")
 	}
 	return elements, nil
 }
@@ -48,7 +48,7 @@ func getAllPageElements(xpathQuery string, doc *html.Node) ([]*html.Node, error)
 func getPageElementCount(xpathQuery string, doc *html.Node) (int, error) {
 	elements, err := htmlquery.QueryAll(doc, xpathQuery)
 	if err != nil || elements == nil {
-		return 0, errors.New("No element matching the supplied XPath expression was found.")
+		return 0, errors.New("No element matching the supplied XPath expression was found")
 	}
 	return len(elements), nil
 }
@@ -177,26 +177,29 @@ func Test404NotFoundRoute(t *testing.T) {
 	}
 	title, err := getPageElement("//title", doc)
 	if err != nil || title == nil {
-		t.Error("Title tag was not found")
-	}
-	if htmlquery.InnerText(title) != "404 - Not Found" {
-		t.Errorf("got '%s'; want '%s'", htmlquery.InnerText(title), "404 - Not Found")
+		t.Errorf("Title tag was not found")
+	} else {
+		if htmlquery.InnerText(title) != "404 - Not Found" {
+			t.Errorf("got '%s'; want '%s'", htmlquery.InnerText(title), "404 - Not Found")
+		}
 	}
 
 	h1, err := getPageElement("//h1", doc)
 	if err != nil || h1 == nil {
 		t.Error("h1 tag was not found")
-	}
-	if htmlquery.InnerText(h1) != "A Go URL Shortener" {
-		t.Errorf("got '%s'; want '%s'", htmlquery.InnerText(h1), "A Go URL Shortener")
+	} else {
+		if htmlquery.InnerText(h1) != "A Go URL Shortener" {
+			t.Errorf("got '%s'; want '%s'", htmlquery.InnerText(h1), "A Go URL Shortener")
+		}
 	}
 
 	h2, err := getPageElement("//h2", doc)
 	if err != nil || h2 == nil {
 		t.Error("h2 tag was not found")
-	}
-	expectedResult := "404 - Not Found"
-	if htmlquery.InnerText(h2) != expectedResult {
-		t.Errorf("got '%s'; want '%s'", htmlquery.InnerText(h2), expectedResult)
+	} else {
+		expectedResult := "404 - Not Found"
+		if htmlquery.InnerText(h2) != expectedResult {
+			t.Errorf("got '%s'; want '%s'", htmlquery.InnerText(h2), expectedResult)
+		}
 	}
 }

@@ -5,6 +5,10 @@ import (
 	"errors"
 )
 
+// ShortenerDataInterface provides an interface for objects that interact with shortener data.
+//
+// Specifically, it provides methods for retrieving one, retrieving all,
+// incrementing a click count, and adding one.
 type ShortenerDataInterface interface {
 	Get(shortened string) (*ShortenerData, error)
 	IncrementClicks(shortened string) error
@@ -12,7 +16,8 @@ type ShortenerDataInterface interface {
 	Latest() ([]*ShortenerData, error)
 }
 
-// Stores an original URL, shortened URL, and the number of times the shortened URL was clicked
+// ShortenerData stores an original URL, shortened URL, and the number of times
+// the shortened URL was clicked
 type ShortenerData struct {
 	OriginalURL, ShortenedURL string
 	Clicks                    int
@@ -49,9 +54,9 @@ func (m *ShortenerDataModel) Get(shortened string) (*ShortenerData, error) {
 		if errors.Is(err, sql.ErrNoRows) {
 			var ErrNoRecord = errors.New("models: no matching record found")
 			return nil, ErrNoRecord
-		} else {
-			return nil, err
-		}
+		} 
+	
+		return nil, err
 	}
 
 	return data, nil
