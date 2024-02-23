@@ -7,6 +7,7 @@ import (
 	"gourlshortener/internals/models/mocks"
 	"io"
 	"net/http"
+	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
 	"os"
@@ -69,6 +70,27 @@ func TestPingRoute(t *testing.T) {
 	}
 }
 
+type testServer struct {
+    *httptest.Server
+}
+
+func newTestServer(t *testing.T, h http.Handler) *testServer {
+	ts := httptest.NewTLSServer(h)
+
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ts.Client().Jar = jar
+
+	ts.Client().CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+
+	return &testServer{ts}
+}
+
 func TestCanShortenUrl(t *testing.T) {
 	app := &App{
 		urls:            &mocks.ShortenerDataModel{},
@@ -76,12 +98,12 @@ func TestCanShortenUrl(t *testing.T) {
 		templateBaseDir: getTemplateDir(t),
 	}
 
-	ts := httptest.NewTLSServer(app.Routes())
+	ts := newTestServer(t, app.Routes())
 	defer ts.Close()
 
 	var form = url.Values{}
 	form.Add("url", "https://osnews.com")
-	rs, err := ts.Client().PostForm(ts.URL + "/", form)
+	rs, err := ts.Client().PostForm(ts.URL+"/", form)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -7,18 +7,22 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
-	_ "modernc.org/sqlite"
 	"github.com/joho/godotenv"
+	_ "modernc.org/sqlite"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	env, ok := os.LookupEnv("ENVIRONMENT")
+	if ok && strings.ToLower(env) == "development" {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatal("Error loading .env file")
+		}
 	}
 
-	dbFile := os.Getenv("DATABASE_FILE")
+	dbFile := os.Getenv("DATABASE_DIR") + os.Getenv("DATABASE_FILE")
 	authKey := os.Getenv("AUTHENTICATION_KEY")
 	templateBaseDir := os.Getenv("TEMPLATE_BASEDIR")
 	staticDir := os.Getenv("STATIC_DIR")
