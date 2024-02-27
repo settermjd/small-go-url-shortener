@@ -1,37 +1,29 @@
+ARG GO_VERSION=1
+ARG ALPINE_VERSION=3.17
+
 # Stage one - build the binary
-FROM golang:alpine AS build
+FROM golang:${GO_VERSION}-alpine AS builder
 
-ARG DATABASE_DIR
-ARG DATABASE_FILE
-ENV DATABASE_DIR=$DATABASE_DIR
-ENV DATABASE_FILE=$DATABASE_FILE
+#RUN apk --no-cache add gcc g++ make git sqlite
 
-RUN apk --no-cache add gcc g++ make git sqlite
+WORKDIR /usr/src/app
 
-WORKDIR /go/src/app
+COPY go.mod go.sum ./
+RUN go mod download && go mod tidy && go mod verify
 
 COPY . .
-
-RUN go mod tidy
-RUN GOOS=linux go build -ldflags="-s -w" -o ./bin/gourlshortener ./main.go
-# RUN chmod +x ./bin/build-db.sh && ./bin/build-db.sh
+RUN GOOS=linux go build -v -ldflags="-s -w" -o /gourlshortener .
 
 # Stage two - deploy the binary
-FROM alpine:3.17
+FROM alpine:${ALPINE_VERSION}
 
-# ARG DATABASE_DIR
-# ARG DATABASE_FILE
+WORKDIR /opt
 
-RUN apk --no-cache add ca-certificates
+# Copy over the static assets, database migrations, templates, and scripts
+COPY ./bin bin
+COPY ./db db
+COPY ./static static
+COPY ./templates templates
 
-WORKDIR /usr/bin
-
-COPY --from=build /go/src/app/bin /go/bin
-COPY --from=build /go/src/app/db /go/bin/db
-# COPY --from=build /go/src/app/${DATABASE_FILE} ${DATABASE_DIR}${DATABASE_FILE}
-COPY --from=build /go/src/app/static /go/bin/static
-COPY --from=build /go/src/app/templates /go/bin/templates
-
-EXPOSE 80
-
-ENTRYPOINT /go/bin/gourlshortener --port 80
+COPY --from=builder /gourlshortener /usr/local/bin/
+CMD ["gourlshortener"]
