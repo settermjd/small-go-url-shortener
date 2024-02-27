@@ -22,7 +22,7 @@ func main() {
 		}
 	}
 
-	dbFile := os.Getenv("DATABASE_DIR") + os.Getenv("DATABASE_FILE")
+	dbFile := strings.TrimPrefix(os.Getenv("DATABASE_URL"), "sqlite:")
 	authKey := os.Getenv("AUTHENTICATION_KEY")
 	templateBaseDir := os.Getenv("TEMPLATE_BASEDIR")
 	staticDir := os.Getenv("STATIC_DIR")
