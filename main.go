@@ -22,6 +22,11 @@ func main() {
 		}
 	}
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
+
 	dbFile := strings.TrimPrefix(os.Getenv("DATABASE_URL"), "sqlite:")
 	authKey := os.Getenv("AUTHENTICATION_KEY")
 	templateBaseDir := os.Getenv("TEMPLATE_BASEDIR")
@@ -37,7 +42,7 @@ func main() {
 	defer db.Close()
 
 	app := application.NewApp(db, authKey, templateBaseDir, staticDir)
-	addr := flag.String("addr", ":8080", "HTTP network address")
+	addr := flag.String("addr", ":"+port, "HTTP network address")
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
