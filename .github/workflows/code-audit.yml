@@ -14,18 +14,18 @@ jobs:
   code-integration:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout the code
         uses: actions/checkout@v4
 
-      - name: Setup Go
+      - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version-file: "go.mod"
 
-      - name: Verify dependencies
+      - name: Verify the project's dependencies
         run: go mod verify
 
-      - name: Build
+      - name: Build the binary
         run: go build -v ./...
 
       - name: Run go vet
@@ -43,5 +43,5 @@ jobs:
       - name: Run golint
         run: golint ./...
 
-      - name: Run tests
+      - name: Run the tests
         run: go test -race -vet=off ./...

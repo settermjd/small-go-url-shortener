@@ -19,7 +19,7 @@ jobs:
     uses: ./.github/workflows/code-audit.yml
 
   code-deploy:
-    name: Deploy app
+    name: Deploy app to production on Fly.io
     runs-on: ubuntu-latest
     concurrency: deploy-group
     steps:
