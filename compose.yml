@@ -8,14 +8,12 @@ services:
       dockerfile: Dockerfile
       context: .
     environment:
-      # This is required by the URL shortener
       - AUTHENTICATION_KEY=${AUTHENTICATION_KEY}
-      # This is required for opening the database file
-      # and for the migrations tool (dbmate)
       - DATABASE_URL=${DATABASE_URL}
-      # The absolute path to the static assets directory
+      - DBMATE_MIGRATIONS_DIR=${DBMATE_MIGRATIONS_DIR}
+      - DBMATE_SCHEMA_FILE=${DBMATE_SCHEMA_FILE}
+      - DBMATE_STRICT=${DBMATE_STRICT}
       - STATIC_DIR=${STATIC_DIR}
-      # The absolute path to the templates directory
       - TEMPLATE_BASEDIR=${TEMPLATE_BASEDIR}
       - PORT=${PORT:-8000}
     volumes:
