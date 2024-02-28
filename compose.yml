@@ -3,7 +3,7 @@ services:
   go-web-app:
     restart: always
     ports:
-      - "8080:8080"
+      - "${PORT:-8000}:${PORT:-8000}"
     build:
       dockerfile: Dockerfile
       context: .
@@ -17,6 +17,7 @@ services:
       - STATIC_DIR=${STATIC_DIR}
       # The absolute path to the templates directory
       - TEMPLATE_BASEDIR=${TEMPLATE_BASEDIR}
+      - PORT=${PORT:-8000}
     volumes:
       - "urlshortenerdata:$DATABASE_DIR"
     command:
