@@ -25,8 +25,8 @@ COPY ./db db
 COPY ./static static
 COPY ./templates templates
 
-# Ensure that the migrations script is executable
-RUN chmod ug+x ./bin/run-migrations.sh
+# Ensure that the deployment scripts are executable
+RUN chmod ug+x ./bin/run-migrations.sh ./bin/launch.sh 
 
 # Install dbmate (the database migration tool) in a way that works on Alpine Linux.
 RUN apk --no-cache add npm sqlite \
@@ -34,4 +34,4 @@ RUN apk --no-cache add npm sqlite \
 
 # Copy over the Go binary and set it as the command to run on boot
 COPY --from=builder /gourlshortener /usr/local/bin/
-CMD ["gourlshortener"]
+ENTRYPOINT ["/opt/bin/launch.sh"]
