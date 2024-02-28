@@ -19,6 +19,12 @@ services:
       - TEMPLATE_BASEDIR=${TEMPLATE_BASEDIR}
     volumes:
       - "urlshortenerdata:$DATABASE_DIR"
+    command:
+      - /bin/sh
+      - -c
+      - |
+        /opt/bin/run-migrations.sh
+        gourlshortener
 
 volumes:
   urlshortenerdata:
