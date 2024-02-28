@@ -6,3 +6,9 @@
 
 # Don't copy the data directory, as the database will be created on build
 data
+
+# Ignore the NPM cache
+/node_modules/
+
+# Ignore macOS cache files
+.DS_Store
