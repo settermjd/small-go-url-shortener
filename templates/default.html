@@ -21,12 +21,12 @@
       <div class="mx-auto my-auto lg:max-w-8xl xl:w-[70rem] w-full px-4 mt-6 mb-1">
 
         <form id="link-shortener"
-          class="flex flex-col rounded-md border-2 border-slate-800 dark:border-slate-600 p-6 dark:shadow-md shadow-sm rounded-lg bg-slate-700"
+          class="flex flex-col rounded-md border-2 border-slate-800 dark:border-slate-600 p-4 lg:p-6 dark:shadow-md shadow-sm rounded-lg bg-slate-700"
           action="/" method="post">
           <div class="grow mb-1">
             <label>
               <input placeholder="Enter a URL to shorten" type="url" name="url"
-                class="w-full border-2 rounded-md py-2 dark:placeholder:text-slate-400 px-3 bg-slate-100 transition ease-in-out delay-150 duration-200 hover:bg-slate-200"
+                class="w-full border-2 rounded-md py-3 dark:placeholder:text-slate-400 px-3 bg-slate-100 transition ease-in-out delay-150 duration-200 hover:bg-slate-200"
                 {{/* Display the original URL if there is an error processing the form */}} {{ if and (ne .Error "" )
                 (ne .OriginalURL "" ) }}value="{{ .OriginalURL }}" {{ end }}>
             </label>
@@ -64,16 +64,20 @@
 
       <div class="block lg:hidden mt-3">
         {{ range .URLData }}
-        <div class="rounded-md bg-slate-50 border-slate-200 border-2 mb-3 p-3 flex flex-row gap-2">
-          <div class="grow items-center overflow-hidden text-clip">
+        <div class="rounded-md bg-slate-50 border-slate-300 border-2 mb-3 p-4 px-5 drop-shadow-sm shadow-sm">
+          <div class="mb-2">
             <a href="/open?url={{ .ShortenedURL }}" target="_blank"
-              class="hover:underline underline-offset-4 decoration-2 decoration-blue-500 dark:decoration-slate-500 text-xl">{{
+              class="hover:underline underline-offset-4 decoration-2 decoration-blue-500 dark:decoration-slate-500 text-2xl text-slate-600 font-medium w-full">{{
               .ShortenedURL }}</a>
-            <div class="text-slate-500 mt-1"><span class="font-semibold">Redirects to:</span> <span
-                title="{{ .OriginalURL }}">{{ .OriginalURL }}</span></div>
           </div>
-          <div class="shrink rounded-lg bg-slate-500 text-white py-3 px-3 ml-2">
-            {{ .Clicks | formatClicks }}
+          <div class="items-center overflow-hidden text-ellipsis w-full">
+            <div class="text-slate-400"><span class="mr-1 font-semibold">&#10137;</span><span
+                title="{{ .OriginalURL }}">{{
+                .OriginalURL }}</span></div>
+          </div>
+          <hr class="mt-3">
+          <div class="text-slate-400 mt-2 ml-1">
+            clicks: {{ .Clicks | formatClicks }}
           </div>
         </div>
         {{ end }}
