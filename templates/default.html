@@ -64,19 +64,20 @@
 
       <div class="block lg:hidden mt-3">
         {{ range .URLData }}
-        <div class="rounded-md bg-slate-50 border-slate-300 border-2 mb-3 p-4 px-5 drop-shadow-sm shadow-sm">
+        <div
+          class="rounded-md bg-slate-50 dark:bg-slate-700 border-slate-200 border-2 mb-3 p-4 px-5 drop-shadow-sm shadow-sm">
           <div class="mb-2">
             <a href="/open?url={{ .ShortenedURL }}" target="_blank"
-              class="hover:underline underline-offset-4 decoration-2 decoration-blue-500 dark:decoration-slate-500 text-2xl text-slate-600 font-medium w-full">{{
+              class="hover:underline underline-offset-4 decoration-2 decoration-blue-500 dark:decoration-slate-500 text-2xl text-slate-600 dark:text-slate-200 font-semibold w-full">{{
               .ShortenedURL }}</a>
           </div>
           <div class="items-center overflow-hidden text-ellipsis w-full">
-            <div class="text-slate-400"><span class="mr-1 font-semibold">&#10137;</span><span
+            <div class="text-slate-500 dark:text-slate-400"><span class="mr-1 font-semibold">&#10137;</span><span
                 title="{{ .OriginalURL }}">{{
                 .OriginalURL }}</span></div>
           </div>
-          <hr class="mt-3">
-          <div class="text-slate-400 mt-2 ml-1">
+          <hr class="mt-3 dark:border-slate-600 dark:bg-slate-600 bg-slate-200 w-48 h-1 shadow-sm rounded">
+          <div class="text-slate-400 dark:text-slate-400 mt-2 ml-1">
             clicks: {{ .Clicks | formatClicks }}
           </div>
         </div>
@@ -84,17 +85,17 @@
       </div>
 
       <table id="shortened-links-table"
-        class="hidden lg:block table-fixed rounded-md bg-slate-50 dark:bg-slate-800 border-separate border-spacing-2 border-2 dark:border-0 border-slate-200 shadow-sm">
+        class="w-full hidden lg:block table-fixed rounded-md bg-slate-50 dark:bg-slate-800 border-separate border-spacing-2 border-2 dark:border-0 border-slate-200 shadow-sm nowrap">
         <thead>
           <tr class="table-row">
             <th
-              class="border border-slate-300 rounded-sm pl-4 text-left bg-slate-200 dark:text-white dark:bg-slate-800 dark:border-0 py-2">
+              class="border border-slate-300 rounded-sm pl-4 text-left bg-slate-200 dark:text-white dark:bg-slate-800 dark:border-0 py-2 w-2/12">
               Shortened URL</th>
             <th
-              class="border border-slate-300 rounded-sm pl-4 text-left bg-slate-200 dark:text-white dark:bg-slate-800 dark:border-0">
+              class="border border-slate-300 rounded-sm pl-4 text-left bg-slate-200 dark:text-white dark:bg-slate-800 dark:border-0 w-7/12">
               Original URL</th>
             <th
-              class="border border-slate-300 rounded-sm bg-slate-200 dark:text-white dark:bg-slate-800 dark:border-0 px-2">
+              class="border border-slate-300 rounded-sm bg-slate-200 dark:text-white dark:bg-slate-800 dark:border-0 px-2 w-1/12">
               Clicks</th>
           </tr>
         </thead>
@@ -110,21 +111,21 @@
           {{ end }}
           {{/* Iterate over the existing URL data */}}
           {{ range .URLData }}
-          <tr class="table-row">
+          <tr>
             <td
-              class="border border-slate-300 py-2 pl-4 text-left rounded-sm bg-white dark:text-white dark:bg-slate-700 dark:border-0 break-words w-80">
+              class="border border-slate-300 py-2 pl-4 text-left rounded-sm bg-white dark:text-white dark:bg-slate-700 dark:border-0 break-words w-80 text-ellipsis overflow-hidden">
               <a href="/open?url={{ .ShortenedURL }}" target="_blank"
-                class="hover:underline underline-offset-4 decoration-2 decoration-blue-500 dark:decoration-slate-500 text-ellipsis overflow-hidden">{{
+                class="hover:underline underline-offset-4 decoration-2 decoration-blue-500 dark:decoration-slate-500">{{
                 .ShortenedURL }}</a>
             </td>
             <td
-              class="border border-slate-300 py-2 px-2 text-left rounded-sm bg-white dark:bg-slate-700 dark:border-0 text-balance break-words">
+              class="border border-slate-300 p-2 text-left rounded-sm bg-white dark:text-white dark:bg-slate-700 dark:border-0 text-clip overflow-hidden">
               <a class="table-cell lg:max-w-2xl" title="{{ .OriginalURL }}">{{
                 .OriginalURL
                 }}</a>
             </td>
             <td
-              class="border border-slate-300 py-2 rounded-sm bg-white dark:text-white dark:bg-slate-700 dark:border-0 xl:max-w-24">
+              class="border border-slate-300 py-2 rounded-sm bg-white dark:text-white dark:bg-slate-700 dark:border-0 xl:max-w-24 text-ellipsis overflow-hidden">
               {{ .Clicks | formatClicks }}</td>
           </tr>
           {{ end }}
