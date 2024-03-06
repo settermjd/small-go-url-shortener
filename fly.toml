@@ -14,7 +14,11 @@ primary_region = 'syd'
   min_machines_running = 1
   processes = ['app']
 
-[http_service.http_options.response.headers]
+[[services.ports]]
+  port = 443
+  handlers = ["tls", "http"]
+
+[services.ports.http_options.response.headers]
   Clear-Site-Data = "*"
   Content-Security-Policy = "default-src 'self'"
   Referrer-Policy = "origin-when-cross-origin"
