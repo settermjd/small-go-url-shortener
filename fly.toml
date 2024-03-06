@@ -14,6 +14,14 @@ primary_region = 'syd'
   min_machines_running = 1
   processes = ['app']
 
+[http_service.http_options.response.headers]
+  Clear-Site-Data = "*"
+  Content-Security-Policy = "default-src 'self'"
+  Referrer-Policy = "origin-when-cross-origin"
+  Strict-Transport-Security = "max-age=63072000; includeSubDomains;"
+  X-Content-Type-Options = "nosniff"
+  X-Frame-Options = "sameorigin"
+
 [[vm]]
   memory = '1gb'
   cpu_kind = 'shared'
